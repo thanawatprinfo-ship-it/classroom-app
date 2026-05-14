@@ -35,7 +35,6 @@
                     <button onclick="switchTab('students')" id="tab-students" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">รายชื่อนักเรียน</button>
                     <button onclick="switchTab('attendance')" id="tab-attendance" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เช็คชื่อ</button>
                     <button onclick="switchTab('scores')" id="tab-scores" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เก็บคะแนน</button>
-                    <button onclick="switchTab('settings')" id="tab-settings" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">ตั้งค่าระบบ</button>
                 </div>
                 <!-- User Profile & Mobile menu button -->
                 <div class="flex items-center gap-4">
@@ -56,7 +55,6 @@
                 <button onclick="switchTab('students')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">รายชื่อนักเรียน</button>
                 <button onclick="switchTab('attendance')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เช็คชื่อ</button>
                 <button onclick="switchTab('scores')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เก็บคะแนน</button>
-                <button onclick="switchTab('settings')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">ตั้งค่าระบบ</button>
                 <button onclick="handleLogout()" class="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50 border-t border-slate-100"><i class="ph ph-sign-out mr-1"></i> ออกจากระบบ</button>
             </div>
         </div>
@@ -105,28 +103,6 @@
                 <div class="mt-6 text-center text-xs text-slate-400">
                     *หากกดสมัครใช้งาน ระบบอาจส่งอีเมลไปให้ยืนยันตัวตน (ขึ้นอยู่กับการตั้งค่า Supabase)
                 </div>
-            </div>
-        </div>
-
-        <!-- ================= VIEW: SETTINGS ================= -->
-        <div id="view-settings" class="view-section hidden">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto mt-10">
-                <h2 class="text-2xl font-bold mb-2 flex items-center gap-2"><i class="ph ph-database text-blue-600"></i> ตั้งค่าเชื่อมต่อ Supabase</h2>
-                <p class="text-slate-500 mb-6 text-sm">กรุณาใส่ URL และ Anon Key จากโปรเจกต์ Supabase ของคุณ เพื่อเริ่มใช้งานระบบ</p>
-                
-                <form id="setup-form" onsubmit="saveConfig(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Supabase URL</label>
-                        <input type="url" id="sb-url" required placeholder="https://xxxx.supabase.co" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Supabase Anon Key</label>
-                        <input type="password" id="sb-key" required placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
-                    </div>
-                    <div class="pt-4 flex gap-3">
-                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium">บันทึกและเชื่อมต่อ</button>
-                    </div>
-                </form>
             </div>
         </div>
 
@@ -270,6 +246,13 @@
     <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col gap-2 z-50"></div>
 
     <script>
+        // ==========================================
+        // 🔴 ตั้งค่า Supabase ของคุณที่นี่ 🔴
+        // นำ URL และ Anon Key ของคุณมาใส่ตรงนี้ได้เลยครับ
+        // ==========================================
+        const SUPABASE_URL = 'https://dqfvnzyhgayrxlroxexq.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZnZuenloZ2F5cnhscm94ZXhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTY4OTksImV4cCI6MjA5NDMzMjg5OX0.YxVau8VheQxqeBJaFfgzVGEWSRN3_uPA8ZMoVp90fzk';
+
         // === State Management ===
         let supabaseClient = null;
         let globalStudents = [];
@@ -318,38 +301,17 @@
 
         // === Initialization & Config ===
         function initApp() {
-            const savedUrl = localStorage.getItem('supabase_url');
-            const savedKey = localStorage.getItem('supabase_key');
-            
-            if (savedUrl && savedKey) {
-                document.getElementById('sb-url').value = savedUrl;
-                document.getElementById('sb-key').value = savedKey;
-                connectSupabase(savedUrl, savedKey);
-            } else {
-                switchTab('settings');
+            if (SUPABASE_URL === 'ใส่_URL_ของคุณตรงนี้' || SUPABASE_ANON_KEY === 'ใส่_ANON_KEY_ของคุณตรงนี้') {
+                alert('กรุณาแก้ไขไฟล์โค้ดและใส่ข้อมูล Supabase ของคุณก่อนใช้งานครับ');
+                return;
             }
-        }
 
-        function connectSupabase(url, key) {
             try {
-                supabaseClient = window.supabase.createClient(url, key);
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 checkAuthStatus(); // Check login status after connecting
-                return true;
             } catch (err) {
-                showToast('เชื่อมต่อ Supabase ไม่สำเร็จ', 'error');
-                return false;
-            }
-        }
-
-        function saveConfig(e) {
-            e.preventDefault();
-            const url = document.getElementById('sb-url').value.trim();
-            const key = document.getElementById('sb-key').value.trim();
-            
-            if (connectSupabase(url, key)) {
-                localStorage.setItem('supabase_url', url);
-                localStorage.setItem('supabase_key', key);
-                showToast('บันทึกการตั้งค่าแล้ว', 'success');
+                showToast('เชื่อมต่อ Supabase ไม่สำเร็จ กรุณาตรวจสอบ Key', 'error');
+                console.error(err);
             }
         }
 
