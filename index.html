@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการชั้นเรียน (Classroom Management)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Phosphor Icons for UI -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Custom scrollbar and font styling */
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Prompt', sans-serif; }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .toast-enter { transform: translateY(100%); opacity: 0; }
+        .toast-enter-active { transform: translateY(0); opacity: 1; transition: all 300ms ease-in-out; }
+        .toast-exit { transform: translateY(0); opacity: 1; }
+        .toast-exit-active { transform: translateY(100%); opacity: 0; transition: all 300ms ease-in-out; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow-sm border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <i class="ph ph-graduation-cap text-3xl text-blue-600"></i>
+                    <span class="font-bold text-xl text-slate-900">Classroom<span class="text-blue-600">Pro</span></span>
+                </div>
+                <div class="flex items-center hidden sm:flex gap-6" id="nav-tabs">
+                    <button onclick="switchTab('students')" id="tab-students" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">รายชื่อนักเรียน</button>
+                    <button onclick="switchTab('attendance')" id="tab-attendance" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เช็คชื่อ</button>
+                    <button onclick="switchTab('scores')" id="tab-scores" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เก็บคะแนน</button>
+                    <button onclick="switchTab('settings')" id="tab-settings" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">ตั้งค่าฐานข้อมูล</button>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button onclick="toggleMobileMenu()" class="text-slate-500 hover:text-slate-700 focus:outline-none">
+                        <i class="ph ph-list text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden sm:hidden border-t border-slate-200 bg-white">
+            <div class="pt-2 pb-3 space-y-1">
+                <button onclick="switchTab('students')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">รายชื่อนักเรียน</button>
+                <button onclick="switchTab('attendance')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เช็คชื่อ</button>
+                <button onclick="switchTab('scores')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เก็บคะแนน</button>
+                <button onclick="switchTab('settings')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">ตั้งค่าฐานข้อมูล</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- ================= VIEW: SETTINGS ================= -->
+        <div id="view-settings" class="view-section hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-2xl mx-auto">
+                <h2 class="text-2xl font-bold mb-2 flex items-center gap-2"><i class="ph ph-database text-blue-600"></i> ตั้งค่าเชื่อมต่อ Supabase</h2>
+                <p class="text-slate-500 mb-6 text-sm">กรุณาใส่ URL และ Anon Key จากโปรเจกต์ Supabase ของคุณ ข้อมูลจะถูกบันทึกไว้ในเบราว์เซอร์ของคุณเท่านั้น</p>
+                
+                <form id="setup-form" onsubmit="saveConfig(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Supabase URL</label>
+                        <input type="url" id="sb-url" required placeholder="https://xxxx.supabase.co" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Supabase Anon Key</label>
+                        <input type="password" id="sb-key" required placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+                    <div class="pt-4 flex gap-3">
+                        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium">บันทึกและเชื่อมต่อ</button>
+                        <button type="button" onclick="checkConnection()" class="bg-slate-100 text-slate-700 px-6 py-2 rounded-lg hover:bg-slate-200 transition font-medium">ทดสอบการเชื่อมต่อ</button>
+                    </div>
+                </form>
+                
+                <div id="connection-status" class="mt-4 p-3 rounded-lg hidden"></div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: STUDENTS ================= -->
+        <div id="view-students" class="view-section hidden">
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Add Student Form -->
+                <div class="w-full md:w-1/3">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-6">
+                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-user-plus text-blue-600"></i> เพิ่มนักเรียน</h2>
+                        <form id="add-student-form" onsubmit="addStudent(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">รหัสนักเรียน</label>
+                                <input type="text" id="stu-id" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ - นามสกุล</label>
+                                <input type="text" id="stu-name" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium">เพิ่มนักเรียน</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Student List -->
+                <div class="w-full md:w-2/3">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <h2 class="text-xl font-bold text-slate-800">รายชื่อนักเรียนทั้งหมด</h2>
+                            <button onclick="loadStudents()" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"><i class="ph ph-arrows-clockwise"></i> รีเฟรช</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-white text-slate-500 text-sm border-b border-slate-200">
+                                        <th class="p-4 font-medium">ลำดับ</th>
+                                        <th class="p-4 font-medium">รหัสนักเรียน</th>
+                                        <th class="p-4 font-medium">ชื่อ-นามสกุล</th>
+                                        <th class="p-4 font-medium text-right">จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-table-body" class="divide-y divide-slate-100">
+                                    <!-- Rows will be populated by JS -->
+                                    <tr><td colspan="4" class="p-8 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: ATTENDANCE ================= -->
+        <div id="view-attendance" class="view-section hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-calendar-check text-blue-600"></i> เช็คชื่อประจำวัน</h2>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-slate-700">วันที่:</label>
+                        <input type="date" id="attendance-date" onchange="loadAttendance()" class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-white text-slate-500 text-sm border-b border-slate-200">
+                                <th class="p-4 font-medium">รหัสนักเรียน</th>
+                                <th class="p-4 font-medium">ชื่อ-นามสกุล</th>
+                                <th class="p-4 font-medium text-center">สถานะ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendance-table-body" class="divide-y divide-slate-100">
+                            <!-- Rows will be populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW: SCORES ================= -->
+        <div id="view-scores" class="view-section hidden">
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Add Score Form -->
+                <div class="w-full md:w-1/3">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-6">
+                        <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-exam text-blue-600"></i> บันทึกคะแนน</h2>
+                        <form id="add-score-form" onsubmit="addScore(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">เลือกนักเรียน</label>
+                                <select id="score-student" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                    <option value="">-- โหลดข้อมูลนักเรียน --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่องาน / การสอบ</label>
+                                <input type="text" id="score-task" required placeholder="เช่น สอบกลางภาค, การบ้าน 1" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="w-1/2">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">คะแนนที่ได้</label>
+                                    <input type="number" step="0.1" id="score-earned" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">คะแนนเต็ม</label>
+                                    <input type="number" step="0.1" id="score-max" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium">บันทึกคะแนน</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Scores List -->
+                <div class="w-full md:w-2/3">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <h2 class="text-xl font-bold text-slate-800">ประวัติการเก็บคะแนน</h2>
+                            <button onclick="loadScores()" class="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"><i class="ph ph-arrows-clockwise"></i> รีเฟรช</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-white text-slate-500 text-sm border-b border-slate-200">
+                                        <th class="p-4 font-medium">วันที่บันทึก</th>
+                                        <th class="p-4 font-medium">ชื่อนักเรียน</th>
+                                        <th class="p-4 font-medium">ชื่องาน</th>
+                                        <th class="p-4 font-medium text-right">คะแนน</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scores-table-body" class="divide-y divide-slate-100">
+                                    <!-- Rows will be populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col gap-2 z-50"></div>
+
+    <script>
+        // === State Management ===
+        let supabaseClient = null;
+        let globalStudents = [];
+        let currentTab = 'settings';
+
+        // Set today's date for attendance input
+        document.getElementById('attendance-date').valueAsDate = new Date();
+
+        // === UI & Notification Functions ===
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            // Setup colors based on type
+            const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
+            const icon = type === 'success' ? 'ph-check-circle' : (type === 'error' ? 'ph-warning-circle' : 'ph-info');
+            
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 toast-enter toast-enter-active max-w-sm`;
+            toast.innerHTML = `<i class="ph ${icon} text-xl"></i><span class="text-sm font-medium">${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('toast-enter', 'toast-enter-active');
+            }, 300);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('toast-exit', 'toast-exit-active');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function switchTab(tabId) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+            // Remove active classes from all tabs
+            document.querySelectorAll('#nav-tabs button').forEach(el => el.classList.remove('tab-active'));
+            
+            // Show selected view and activate tab
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            const tabEl = document.getElementById(`tab-${tabId}`);
+            if(tabEl) tabEl.classList.add('tab-active');
+            
+            currentTab = tabId;
+            document.getElementById('mobile-menu').classList.add('hidden'); // close mobile menu
+
+            // Check configuration before loading data
+            if (tabId !== 'settings' && !supabaseClient) {
+                showToast('กรุณาตั้งค่าเชื่อมต่อ Supabase ก่อน', 'error');
+                switchTab('settings');
+                return;
+            }
+
+            // Load contextual data
+            if (tabId === 'students') loadStudents();
+            if (tabId === 'attendance') { loadStudents(true).then(() => loadAttendance()); }
+            if (tabId === 'scores') { loadStudents(true); loadScores(); }
+        }
+
+        // === Supabase Configuration & Initialization ===
+        function initApp() {
+            const savedUrl = localStorage.getItem('supabase_url');
+            const savedKey = localStorage.getItem('supabase_key');
+            
+            if (savedUrl && savedKey) {
+                document.getElementById('sb-url').value = savedUrl;
+                document.getElementById('sb-key').value = savedKey;
+                connectSupabase(savedUrl, savedKey, false);
+                switchTab('students'); // Auto switch if configured
+            } else {
+                switchTab('settings'); // Show settings first
+            }
+        }
+
+        function connectSupabase(url, key, showNotif = true) {
+            try {
+                // Using global window.supabase from CDN
+                supabaseClient = window.supabase.createClient(url, key);
+                if(showNotif) showToast('เชื่อมต่อ Supabase สำเร็จ!', 'success');
+                return true;
+            } catch (err) {
+                if(showNotif) showToast('รูปแบบ URL หรือ Key ไม่ถูกต้อง', 'error');
+                console.error(err);
+                return false;
+            }
+        }
+
+        function saveConfig(e) {
+            e.preventDefault();
+            const url = document.getElementById('sb-url').value.trim();
+            const key = document.getElementById('sb-key').value.trim();
+            
+            if (connectSupabase(url, key, true)) {
+                localStorage.setItem('supabase_url', url);
+                localStorage.setItem('supabase_key', key);
+                setTimeout(() => switchTab('students'), 1000);
+            }
+        }
+
+        async function checkConnection() {
+            if (!supabaseClient) {
+                const url = document.getElementById('sb-url').value.trim();
+                const key = document.getElementById('sb-key').value.trim();
+                if(!url || !key) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+                if(!connectSupabase(url, key, false)) return;
+            }
+            
+            const statusEl = document.getElementById('connection-status');
+            statusEl.classList.remove('hidden');
+            statusEl.innerHTML = '<span class="text-slate-500">กำลังทดสอบเชื่อมต่อฐานข้อมูล...</span>';
+            statusEl.className = "mt-4 p-3 rounded-lg bg-slate-100 text-sm";
+            
+            try {
+                // Simple query to test connection
+                const { data, error } = await supabaseClient.from('students').select('id').limit(1);
+                if (error) throw error;
+                
+                statusEl.innerHTML = '<i class="ph ph-check-circle text-green-600"></i> <span class="text-green-700 font-medium">การเชื่อมต่อสมบูรณ์ (เข้าถึงตาราง students ได้)</span>';
+                statusEl.className = "mt-4 p-3 rounded-lg bg-green-50 text-sm";
+            } catch (err) {
+                statusEl.innerHTML = `<i class="ph ph-warning text-red-600"></i> <span class="text-red-700 font-medium">เกิดข้อผิดพลาด: ${err.message || 'ไม่พบตารางตามที่ระบุ โปรดเช็ค SQL'}</span>`;
+                statusEl.className = "mt-4 p-3 rounded-lg bg-red-50 text-sm";
+                console.error(err);
+            }
+        }
+
+        // === Students Logic ===
+        async function loadStudents(silent = false) {
+            if(!supabaseClient) return;
+            const tbody = document.getElementById('student-table-body');
+            if(!silent) tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin inline-block text-xl"></i> กำลังโหลดข้อมูล...</td></tr>';
+            
+            try {
+                const { data, error } = await supabaseClient.from('students').select('*').order('student_id', { ascending: true });
+                if (error) throw error;
+                
+                globalStudents = data || [];
+                updateStudentTable();
+                updateStudentSelectDropdowns();
+            } catch (err) {
+                if(!silent) showToast('โหลดข้อมูลนักเรียนล้มเหลว', 'error');
+                console.error(err);
+            }
+        }
+
+        function updateStudentTable() {
+            const tbody = document.getElementById('student-table-body');
+            if (globalStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีรายชื่อนักเรียน</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = globalStudents.map((s, idx) => `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="p-4 text-slate-500">${idx + 1}</td>
+                    <td class="p-4 font-medium text-slate-900">${s.student_id}</td>
+                    <td class="p-4 text-slate-700">${s.name}</td>
+                    <td class="p-4 text-right">
+                        <button onclick="deleteStudent('${s.id}')" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 transition"><i class="ph ph-trash"></i> ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStudentSelectDropdowns() {
+            const scoreSelect = document.getElementById('score-student');
+            scoreSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>' + 
+                globalStudents.map(s => `<option value="${s.id}">${s.student_id} : ${s.name}</option>`).join('');
+        }
+
+        async function addStudent(e) {
+            e.preventDefault();
+            const stuId = document.getElementById('stu-id').value.trim();
+            const name = document.getElementById('stu-name').value.trim();
+            
+            try {
+                const { data, error } = await supabaseClient.from('students').insert([{ student_id: stuId, name: name }]);
+                if (error) throw error;
+                
+                showToast('เพิ่มนักเรียนสำเร็จ', 'success');
+                document.getElementById('add-student-form').reset();
+                loadStudents(); // reload list
+            } catch (err) {
+                if(err.code === '23505') showToast('รหัสนักเรียนนี้มีอยู่แล้ว', 'error');
+                else showToast('เกิดข้อผิดพลาดในการเพิ่มข้อมูล', 'error');
+                console.error(err);
+            }
+        }
+
+        async function deleteStudent(id) {
+            if(!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบนักเรียนคนนี้? (ข้อมูลการเข้าเรียนและคะแนนจะถูกลบด้วย)')) return;
+            try {
+                const { error } = await supabaseClient.from('students').delete().eq('id', id);
+                if (error) throw error;
+                showToast('ลบข้อมูลสำเร็จ', 'success');
+                loadStudents();
+            } catch(err) {
+                showToast('ไม่สามารถลบข้อมูลได้', 'error');
+                console.error(err);
+            }
+        }
+
+        // === Attendance Logic ===
+        async function loadAttendance() {
+            if(!supabaseClient) return;
+            const date = document.getElementById('attendance-date').value;
+            const tbody = document.getElementById('attendance-table-body');
+            
+            if (globalStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-500">กรุณาเพิ่มรายชื่อนักเรียนก่อน</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin inline-block text-xl"></i> กำลังโหลดข้อมูล...</td></tr>';
+            
+            try {
+                // Fetch existing attendance for the selected date
+                const { data: records, error } = await supabaseClient.from('attendance').select('*').eq('date', date);
+                if (error) throw error;
+                
+                // Map existing records to student IDs
+                const attendanceMap = {};
+                records.forEach(r => { attendanceMap[r.student_id] = r.status; });
+                
+                // Generate table based on globalStudents list
+                tbody.innerHTML = globalStudents.map(s => {
+                    const currentStatus = attendanceMap[s.id] || null;
+                    return `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0">
+                        <td class="p-4 text-slate-700 font-medium">${s.student_id}</td>
+                        <td class="p-4 text-slate-700">${s.name}</td>
+                        <td class="p-4 flex justify-center gap-2">
+                            ${generateStatusBtn(s.id, date, 'present', 'มา', currentStatus, 'bg-green-100 text-green-700 hover:bg-green-200 border-green-200')}
+                            ${generateStatusBtn(s.id, date, 'absent', 'ขาด', currentStatus, 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200')}
+                            ${generateStatusBtn(s.id, date, 'late', 'สาย', currentStatus, 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200')}
+                            ${generateStatusBtn(s.id, date, 'leave', 'ลา', currentStatus, 'bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200')}
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                showToast('โหลดข้อมูลการเข้าเรียนล้มเหลว', 'error');
+                console.error(err);
+            }
+        }
+
+        function generateStatusBtn(studentId, date, statusValue, label, currentStatus, colorClasses) {
+            const isActive = currentStatus === statusValue;
+            const activeStyle = isActive ? 'ring-2 ring-offset-1 ring-slate-400 font-bold scale-105 shadow-sm' : 'border border-transparent opacity-70 hover:opacity-100';
+            
+            return `<button onclick="markAttendance('${studentId}', '${date}', '${statusValue}')" 
+                class="px-3 py-1.5 rounded-md text-sm transition-all duration-200 ${colorClasses} ${activeStyle}">
+                ${label}
+            </button>`;
+        }
+
+        async function markAttendance(studentId, date, status) {
+            try {
+                // Upsert operation based on composite unique key (student_id, date) 
+                // Note: Supabase JS SDK upsert requires the primary key or unique constraints to be correctly set.
+                // An easier fallback for Vanilla JS is to select first, then update or insert.
+                
+                const { data: existing, error: findError } = await supabaseClient
+                    .from('attendance').select('id').eq('student_id', studentId).eq('date', date).single();
+                
+                if (existing) {
+                    // Update
+                    await supabaseClient.from('attendance').update({ status: status }).eq('id', existing.id);
+                } else {
+                    // Insert
+                    await supabaseClient.from('attendance').insert([{ student_id: studentId, date: date, status: status }]);
+                }
+                
+                // Visual feedback (refresh UI)
+                loadAttendance();
+            } catch (err) {
+                showToast('บันทึกข้อมูลล้มเหลว', 'error');
+                console.error(err);
+            }
+        }
+
+        // === Scores Logic ===
+        async function loadScores() {
+            if(!supabaseClient) return;
+            const tbody = document.getElementById('scores-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin inline-block text-xl"></i> กำลังโหลดข้อมูล...</td></tr>';
+            
+            try {
+                // Fetch scores with nested student data (Join)
+                const { data, error } = await supabaseClient
+                    .from('scores')
+                    .select(`
+                        id, assignment_name, score, max_score, created_at,
+                        students ( name, student_id )
+                    `)
+                    .order('created_at', { ascending: false });
+                    
+                if (error) throw error;
+                
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีข้อมูลคะแนน</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = data.map(record => {
+                    const dateObj = new Date(record.created_at);
+                    const formattedDate = `${dateObj.getDate()}/${dateObj.getMonth()+1}/${dateObj.getFullYear()}`;
+                    const percentage = Math.round((record.score / record.max_score) * 100);
+                    const colorClass = percentage >= 80 ? 'text-green-600' : (percentage >= 50 ? 'text-blue-600' : 'text-red-600');
+                    
+                    return `
+                    <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                        <td class="p-4 text-sm text-slate-500">${formattedDate}</td>
+                        <td class="p-4">
+                            <div class="font-medium text-slate-800">${record.students?.name || 'ไม่ระบุ'}</div>
+                            <div class="text-xs text-slate-500">${record.students?.student_id || ''}</div>
+                        </td>
+                        <td class="p-4 text-slate-700">${record.assignment_name}</td>
+                        <td class="p-4 text-right">
+                            <span class="font-bold ${colorClass} text-lg">${record.score}</span> 
+                            <span class="text-slate-400 text-sm">/ ${record.max_score}</span>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                showToast('โหลดข้อมูลคะแนนล้มเหลว', 'error');
+                console.error(err);
+            }
+        }
+
+        async function addScore(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('score-student').value;
+            const task = document.getElementById('score-task').value.trim();
+            const earned = parseFloat(document.getElementById('score-earned').value);
+            const max = parseFloat(document.getElementById('score-max').value);
+            
+            if (!studentId) return showToast('กรุณาเลือกนักเรียน', 'error');
+            if (earned > max) return showToast('คะแนนที่ได้ไม่สามารถมากกว่าคะแนนเต็ม', 'error');
+            
+            try {
+                const { error } = await supabaseClient.from('scores').insert([{
+                    student_id: studentId,
+                    assignment_name: task,
+                    score: earned,
+                    max_score: max
+                }]);
+                
+                if (error) throw error;
+                
+                showToast('บันทึกคะแนนสำเร็จ', 'success');
+                document.getElementById('score-task').value = '';
+                document.getElementById('score-earned').value = '';
+                // Keep max score as is for convenience of entering next student's score
+                
+                loadScores(); // reload table
+            } catch (err) {
+                showToast('บันทึกข้อมูลล้มเหลว', 'error');
+                console.error(err);
+            }
+        }
+
+        // Initialize App on load
+        window.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
