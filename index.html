@@ -19,6 +19,13 @@
         .toast-enter-active { transform: translateY(0); opacity: 1; transition: all 300ms ease-in-out; }
         .toast-exit { transform: translateY(0); opacity: 1; }
         .toast-exit-active { transform: translateY(100%); opacity: 0; transition: all 300ms ease-in-out; }
+        
+        /* Modal Animation */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-animate { animation: modalFadeIn 0.2s ease-out forwards; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
@@ -39,31 +46,33 @@
                     </button>
                     
                     <!-- Contextual Tabs (Shows only when inside a classroom) -->
-                    <div id="classroom-context-tabs" class="hidden items-center gap-4 border-l pl-4 border-slate-200 ml-2">
-                        <button onclick="renderView('students')" id="tab-students" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">รายชื่อนักเรียน</button>
-                        <button onclick="renderView('attendance')" id="tab-attendance" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เช็คชื่อ</button>
-                        <button onclick="renderView('scores')" id="tab-scores" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เก็บคะแนน</button>
-                    </div>
-                </div>
-
-                <!-- User Profile & Mobile menu button -->
-                <div class="flex items-center gap-4">
-                    <div class="hidden sm:flex items-center gap-2 text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
-                        <i class="ph ph-user-circle text-lg"></i>
-                        <span id="user-email-display" class="max-w-[120px] truncate">teacher@email.com</span>
-                        <button onclick="handleLogout()" class="ml-2 text-red-500 hover:text-red-700" title="ออกจากระบบ"><i class="ph ph-sign-out"></i></button>
-                    </div>
-                    <button onclick="toggleMobileMenu()" class="text-slate-500 hover:text-slate-700 focus:outline-none sm:hidden">
-                        <i class="ph ph-list text-2xl"></i>
-                    </button>
+                <div id="classroom-context-tabs" class="hidden items-center gap-4 border-l pl-4 border-slate-200 ml-2">
+                    <button onclick="renderView('students')" id="tab-students" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">รายชื่อนักเรียน</button>
+                    <button onclick="renderView('attendance')" id="tab-attendance" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เช็คชื่อ</button>
+                    <button onclick="renderView('scores')" id="tab-scores" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เก็บคะแนน</button>
                 </div>
             </div>
+
+            <!-- User Profile & Mobile menu button -->
+            <div class="flex items-center gap-4">
+                <button onclick="renderView('profile')" class="hidden sm:flex items-center gap-2 text-sm text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full hover:bg-slate-200 transition" title="ข้อมูลส่วนตัว">
+                    <i class="ph ph-user-circle text-lg"></i>
+                    <span id="user-email-display" class="max-w-[120px] truncate">teacher@email.com</span>
+                </button>
+                <button onclick="handleLogout()" class="hidden sm:block text-red-500 hover:text-red-700" title="ออกจากระบบ"><i class="ph ph-sign-out text-xl"></i></button>
+                
+                <button onclick="toggleMobileMenu()" class="text-slate-500 hover:text-slate-700 focus:outline-none sm:hidden">
+                    <i class="ph ph-list text-2xl"></i>
+                </button>
+            </div>
         </div>
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden sm:hidden border-t border-slate-200 bg-white">
-            <div class="pt-2 pb-3 space-y-1">
-                <button onclick="renderView('classrooms')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50"><i class="ph ph-chalkboard-teacher mr-2"></i>ห้องเรียนของฉัน</button>
-                <div id="mobile-context-tabs" class="hidden bg-slate-50 border-y border-slate-100 py-2">
+    </div>
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden sm:hidden border-t border-slate-200 bg-white">
+        <div class="pt-2 pb-3 space-y-1">
+            <button onclick="renderView('profile')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50"><i class="ph ph-user-circle mr-2"></i>โปรไฟล์ของฉัน</button>
+            <button onclick="renderView('classrooms')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50"><i class="ph ph-chalkboard-teacher mr-2"></i>ห้องเรียนของฉัน</button>
+            <div id="mobile-context-tabs" class="hidden bg-slate-50 border-y border-slate-100 py-2">
                     <div class="px-4 text-xs font-bold text-slate-400 mb-1">เมนูประจำห้องเรียน</div>
                     <button onclick="renderView('students')" class="block w-full text-left px-6 py-2 text-base font-medium text-slate-600 hover:bg-slate-100">รายชื่อนักเรียน</button>
                     <button onclick="renderView('attendance')" class="block w-full text-left px-6 py-2 text-base font-medium text-slate-600 hover:bg-slate-100">เช็คชื่อ</button>
@@ -92,11 +101,12 @@
         </div>
     </div>
 
-    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 relative">
         
         <!-- ================= VIEW: AUTH (LOGIN/SIGNUP) ================= -->
         <div id="view-auth" class="view-section hidden">
-            <div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mt-10">
+            <!-- Login Form -->
+            <div id="form-login" class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mt-10 transition-all">
                 <div class="text-center mb-8">
                     <i class="ph ph-graduation-cap text-5xl text-blue-600 mb-2"></i>
                     <h2 class="text-2xl font-bold text-slate-900">เข้าสู่ระบบคุณครู</h2>
@@ -104,12 +114,12 @@
                 </div>
                 <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-5">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">อีเมล</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">อีเมล หรือ ชื่อผู้ใช้งาน</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="ph ph-envelope-simple text-slate-400 text-lg"></i>
+                                <i class="ph ph-user text-slate-400 text-lg"></i>
                             </div>
-                            <input type="email" id="auth-email" required placeholder="teacher@school.com" class="pl-10 w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                            <input type="text" id="auth-identifier" required placeholder="teacher@school.com หรือ Username" class="pl-10 w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
                         </div>
                     </div>
                     <div>
@@ -125,8 +135,54 @@
                         <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium flex justify-center items-center gap-2">
                             เข้าสู่ระบบ
                         </button>
-                        <button type="button" id="btn-signup" onclick="handleSignup()" class="w-full bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-200 transition font-medium">
+                        <button type="button" onclick="toggleAuthMode('signup')" class="w-full bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-200 transition font-medium">
                             สมัครใช้งานครั้งแรก
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Signup Form (New) -->
+            <div id="form-signup" class="max-w-lg mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mt-10 hidden transition-all">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">สร้างบัญชีคุณครูใหม่</h2>
+                    <p class="text-slate-500 text-sm mt-1">กรอกข้อมูลเพื่อเริ่มต้นใช้งานระบบ</p>
+                </div>
+                <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อผู้ใช้งาน (Username) <span class="text-red-500">*</span></label>
+                        <input type="text" id="reg-username" required pattern="^[a-zA-Z0-9_.-]+$" title="ภาษาอังกฤษ ตัวเลข หรือเครื่องหมาย _ - เท่านั้น" placeholder="เช่น kru_somchai (ห้ามใช้ภาษาไทย)" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ <span class="text-red-500">*</span></label>
+                            <input type="text" id="reg-fname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">นามสกุล <span class="text-red-500">*</span></label>
+                            <input type="text" id="reg-lname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">อีเมล <span class="text-red-500">*</span></label>
+                        <input type="email" id="reg-email" required placeholder="teacher@school.com" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-1/2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่าน <span class="text-red-500">*</span></label>
+                            <input type="password" id="reg-password" required minlength="6" placeholder="ขั้นต่ำ 6 ตัว" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ยืนยันรหัสผ่าน <span class="text-red-500">*</span></label>
+                            <input type="password" id="reg-confirm" required minlength="6" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                    </div>
+                    <div class="pt-4 flex flex-col gap-3">
+                        <button type="submit" id="btn-do-signup" class="w-full bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition shadow-sm font-medium flex justify-center items-center gap-2">
+                            สมัครสมาชิก
+                        </button>
+                        <button type="button" onclick="toggleAuthMode('login')" class="w-full bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-200 transition font-medium">
+                            <i class="ph ph-arrow-left"></i> กลับไปหน้าเข้าสู่ระบบ
                         </button>
                     </div>
                 </form>
@@ -145,93 +201,100 @@
                 </button>
             </div>
 
-            <!-- Create Classroom Form (Hidden by default) -->
-            <div id="create-classroom-container" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-8 hidden transition-all">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-chalkboard text-blue-600"></i> สร้างห้องเรียนใหม่</h2>
-                    <button onclick="toggleClassroomForm()" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x text-xl"></i></button>
-                </div>
-                <form id="add-classroom-form" onsubmit="addClassroom(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อห้องเรียน / รายวิชา <span class="text-red-500">*</span></label>
-                                <input type="text" id="cls-name" required placeholder="เช่น คณิตศาสตร์พื้นฐาน" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">รหัสวิชา <span class="text-red-500">*</span></label>
-                                <input type="text" id="cls-code" required placeholder="เช่น ค11101" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase">
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">กลุ่มสาระการเรียนรู้ <span class="text-red-500">*</span></label>
-                                <select id="cls-group" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                                    <option value="">-- เลือกกลุ่มสาระ --</option>
-                                    <option value="ภาษาไทย">ภาษาไทย</option>
-                                    <option value="คณิตศาสตร์">คณิตศาสตร์</option>
-                                    <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
-                                    <option value="สังคมศึกษา ศาสนา และวัฒนธรรม">สังคมศึกษา ศาสนา และวัฒนธรรม</option>
-                                    <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
-                                    <option value="ศิลปะ">ศิลปะ</option>
-                                    <option value="การงานอาชีพ">การงานอาชีพ</option>
-                                    <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
-                                    <option value="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</option>
-                                    <option value="อื่นๆ">อื่น ๆ</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-4">
-                                <div class="w-1/2">
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น <span class="text-red-500">*</span></label>
-                                    <select id="cls-grade" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                                        <option value="">เลือก</option>
-                                        <option value="อนุบาล 1">อ.1</option>
-                                        <option value="อนุบาล 2">อ.2</option>
-                                        <option value="อนุบาล 3">อ.3</option>
-                                        <option value="ประถมศึกษาปีที่ 1">ป.1</option>
-                                        <option value="ประถมศึกษาปีที่ 2">ป.2</option>
-                                        <option value="ประถมศึกษาปีที่ 3">ป.3</option>
-                                        <option value="ประถมศึกษาปีที่ 4">ป.4</option>
-                                        <option value="ประถมศึกษาปีที่ 5">ป.5</option>
-                                        <option value="ประถมศึกษาปีที่ 6">ป.6</option>
-                                    </select>
-                                </div>
-                                <div class="w-1/2">
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">ห้อง <span class="text-red-500">*</span></label>
-                                    <select id="cls-room" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                                        <option value="">เลือก</option>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex gap-4">
-                                <div class="w-1/2">
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">ปีการศึกษา <span class="text-red-500">*</span></label>
-                                    <input type="number" id="cls-year" required placeholder="2567" value="2567" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                                </div>
-                                <div class="w-1/2">
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">ภาคเรียน <span class="text-red-500">*</span></label>
-                                    <select id="cls-semester" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="ฤดูร้อน">ฤดูร้อน</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="pt-6">
-                                <button type="submit" class="w-full bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition shadow-sm font-medium flex justify-center items-center gap-2">
-                                    <i class="ph ph-floppy-disk"></i> บันทึกข้อมูลห้องเรียน
-                                </button>
-                            </div>
-                        </div>
+            <!-- Create Classroom Modal Form (Hidden by default) -->
+            <div id="create-classroom-container" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden transition-opacity" onclick="if(event.target === this) toggleClassroomForm()">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl p-6 mx-4 relative max-h-[90vh] overflow-y-auto modal-animate">
+                    <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-chalkboard text-blue-600 text-2xl"></i> สร้างห้องเรียนใหม่</h2>
+                        <button onclick="toggleClassroomForm()" class="text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 p-2 rounded-full transition-colors flex items-center justify-center">
+                            <i class="ph ph-x text-lg"></i>
+                        </button>
                     </div>
-                </form>
+                    <form id="add-classroom-form" onsubmit="addClassroom(event)">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อห้องเรียน / รายวิชา <span class="text-red-500">*</span></label>
+                                    <input type="text" id="cls-name" required placeholder="เช่น คณิตศาสตร์พื้นฐาน" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสวิชา <span class="text-red-500">*</span></label>
+                                    <input type="text" id="cls-code" required placeholder="เช่น ค11101" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase">
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">กลุ่มสาระการเรียนรู้ <span class="text-red-500">*</span></label>
+                                    <select id="cls-group" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                        <option value="">-- เลือกกลุ่มสาระ --</option>
+                                        <option value="ภาษาไทย">ภาษาไทย</option>
+                                        <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                                        <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                                        <option value="สังคมศึกษา ศาสนา และวัฒนธรรม">สังคมศึกษา ศาสนา และวัฒนธรรม</option>
+                                        <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                                        <option value="ศิลปะ">ศิลปะ</option>
+                                        <option value="การงานอาชีพ">การงานอาชีพ</option>
+                                        <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                                        <option value="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</option>
+                                        <option value="อื่นๆ">อื่น ๆ</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="w-1/2">
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น <span class="text-red-500">*</span></label>
+                                        <select id="cls-grade" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                            <option value="">เลือก</option>
+                                            <option value="อนุบาล 1">อ.1</option>
+                                            <option value="อนุบาล 2">อ.2</option>
+                                            <option value="อนุบาล 3">อ.3</option>
+                                            <option value="ประถมศึกษาปีที่ 1">ป.1</option>
+                                            <option value="ประถมศึกษาปีที่ 2">ป.2</option>
+                                            <option value="ประถมศึกษาปีที่ 3">ป.3</option>
+                                            <option value="ประถมศึกษาปีที่ 4">ป.4</option>
+                                            <option value="ประถมศึกษาปีที่ 5">ป.5</option>
+                                            <option value="ประถมศึกษาปีที่ 6">ป.6</option>
+                                        </select>
+                                    </div>
+                                    <div class="w-1/2">
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">ห้อง <span class="text-red-500">*</span></label>
+                                        <select id="cls-room" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                            <option value="">เลือก</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex gap-4">
+                                    <div class="w-1/2">
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">ปีการศึกษา <span class="text-red-500">*</span></label>
+                                        <input type="number" id="cls-year" required placeholder="2567" value="2567" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                    </div>
+                                    <div class="w-1/2">
+                                        <label class="block text-sm font-medium text-slate-700 mb-1">ภาคเรียน <span class="text-red-500">*</span></label>
+                                        <select id="cls-semester" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="ฤดูร้อน">ฤดูร้อน</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="pt-6 flex gap-3">
+                                    <button type="button" onclick="toggleClassroomForm()" class="w-1/3 bg-slate-100 text-slate-700 px-4 py-2.5 rounded-lg hover:bg-slate-200 transition font-medium">
+                                        ยกเลิก
+                                    </button>
+                                    <button type="submit" class="w-2/3 bg-green-600 text-white px-4 py-2.5 rounded-lg hover:bg-green-700 transition shadow-sm font-medium flex justify-center items-center gap-2">
+                                        <i class="ph ph-floppy-disk"></i> บันทึกข้อมูล
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <!-- Classrooms Grid -->
@@ -428,6 +491,68 @@
             </div>
         </div>
 
+        <!-- ================= VIEW: PROFILE (NEW) ================= -->
+        <div id="view-profile" class="view-section hidden">
+            <div class="max-w-3xl mx-auto">
+                <div class="flex justify-between items-end mb-6 border-b border-slate-200 pb-4">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-800">ข้อมูลส่วนตัว (Profile)</h1>
+                        <p class="text-slate-500 text-sm mt-1">จัดการข้อมูลบัญชีและรหัสผ่านของคุณ</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="ph ph-identification-card text-blue-600"></i> ข้อมูลทั่วไป</h2>
+                    <form id="profile-form" onsubmit="handleUpdateProfile(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">อีเมล <span class="text-xs text-slate-400">(ใช้สำหรับเข้าสู่ระบบ ไม่สามารถเปลี่ยนได้)</span></label>
+                            <input type="email" id="prof-email" disabled class="w-full px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อผู้ใช้งาน (Username)</label>
+                            <input type="text" id="prof-username" required pattern="^[a-zA-Z0-9_.-]+$" title="ภาษาอังกฤษ ตัวเลข หรือเครื่องหมาย _ - เท่านั้น" placeholder="ห้ามใช้ภาษาไทย" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-1/2">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อจริง</label>
+                                <input type="text" id="prof-fname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">นามสกุล</label>
+                                <input type="text" id="prof-lname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <button type="submit" id="btn-update-profile" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium flex items-center gap-2">
+                                <i class="ph ph-floppy-disk"></i> บันทึกข้อมูลส่วนตัว
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="ph ph-lock-key text-blue-600"></i> เปลี่ยนรหัสผ่าน</h2>
+                    <form id="password-form" onsubmit="handleUpdatePassword(event)" class="space-y-4">
+                        <div class="flex gap-4 flex-col sm:flex-row">
+                            <div class="w-full sm:w-1/2">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">รหัสผ่านใหม่</label>
+                                <input type="password" id="prof-new-pwd" required minlength="6" placeholder="อย่างน้อย 6 ตัวอักษร" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="w-full sm:w-1/2">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">ยืนยันรหัสผ่านใหม่</label>
+                                <input type="password" id="prof-confirm-pwd" required minlength="6" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <button type="submit" id="btn-update-password" class="bg-slate-800 text-white px-6 py-2.5 rounded-lg hover:bg-slate-900 transition shadow-sm font-medium flex items-center gap-2">
+                                <i class="ph ph-key"></i> อัปเดตรหัสผ่าน
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Toast Notification Container -->
@@ -444,6 +569,7 @@
         let supabaseClient = null;
         let currentSession = null;
         let globalClassrooms = [];
+        let globalClassroomCounts = {}; // เก็บจำนวนนักเรียนในแต่ละห้อง
         let globalStudents = [];
         let activeClassroom = null; // เก็บข้อมูลห้องเรียนที่กำลังเลือกใช้งาน
 
@@ -499,17 +625,32 @@
             } else {
                 nav.classList.remove('hidden');
                 if (currentSession) {
-                    document.getElementById('user-email-display').textContent = currentSession.user.email;
+                    // Update display name based on user metadata
+                    const meta = currentSession.user.user_metadata;
+                    let displayName = currentSession.user.email;
+                    if (meta && meta.first_name) {
+                        displayName = `ครู${meta.first_name} ${meta.last_name}`;
+                    } else if (meta && meta.username) {
+                        displayName = meta.username;
+                    }
+                    document.getElementById('user-email-display').textContent = displayName;
                 }
 
-                // ถ้ากลับมาหน้าจัดการห้องเรียน ให้รีเซ็ต activeClassroom
-                if (viewId === 'classrooms') {
-                    activeClassroom = null;
+                // ถ้ากลับมาหน้าจัดการห้องเรียน หรือหน้าโปรไฟล์
+                if (viewId === 'classrooms' || viewId === 'profile') {
+                    if (viewId === 'classrooms') {
+                        activeClassroom = null;
+                        document.getElementById('tab-classrooms').classList.add('tab-active');
+                        loadClassrooms();
+                    }
+                    
                     ctxTabs.classList.add('hidden');
                     mobileCtxTabs.classList.add('hidden');
                     headerBanner.classList.add('hidden');
-                    document.getElementById('tab-classrooms').classList.add('tab-active');
-                    loadClassrooms();
+                    
+                    if (viewId === 'profile') {
+                        loadProfile();
+                    }
                 } else if (activeClassroom) {
                     // ถ้ากำลังอยู่ในโหมดเข้าห้องเรียนใดห้องเรียนหนึ่ง
                     ctxTabs.classList.remove('hidden');
@@ -581,39 +722,115 @@
 
         async function handleAuth(e) {
             e.preventDefault();
-            const email = document.getElementById('auth-email').value;
+            const identifier = document.getElementById('auth-identifier').value.trim();
             const password = document.getElementById('auth-password').value;
             const btn = document.getElementById('btn-login');
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> กำลังเข้าสู่ระบบ...';
             btn.disabled = true;
 
+            let email = identifier;
+            // ตรวจสอบว่าถ้าไม่มี @ ให้ถือว่าเป็น Username และไปค้นหาอีเมลในฐานข้อมูล
+            if (!identifier.includes('@')) {
+                const { data, error } = await supabaseClient.from('teacher_profiles').select('email').eq('username', identifier).single();
+                if (data && data.email) {
+                    email = data.email;
+                } else {
+                    showToast('ไม่พบชื่อผู้ใช้งานนี้ในระบบ', 'error');
+                    btn.innerHTML = 'เข้าสู่ระบบ';
+                    btn.disabled = false;
+                    return;
+                }
+            }
+
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            
+            // คืนค่าปุ่มกลับเป็นปกติเสมอไม่ว่าจะเข้าสู่ระบบสำเร็จหรือเกิดข้อผิดพลาด
+            btn.innerHTML = 'เข้าสู่ระบบ';
+            btn.disabled = false;
+
             if (error) {
-                showToast(error.message === 'Invalid login credentials' ? 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' : error.message, 'error');
-                btn.innerHTML = 'เข้าสู่ระบบ';
-                btn.disabled = false;
+                showToast(error.message === 'Invalid login credentials' ? 'ข้อมูลการเข้าสู่ระบบไม่ถูกต้อง' : error.message, 'error');
             } else {
                 showToast('เข้าสู่ระบบสำเร็จ', 'success');
+                document.getElementById('auth-form').reset(); // เคลียร์ฟอร์มเตรียมไว้สำหรับการออกจากระบบครั้งหน้า
             }
         }
 
-        async function handleSignup() {
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            if(!email || password.length < 6) return showToast('กรุณากรอกอีเมลและรหัสผ่าน (อย่างน้อย 6 ตัว)', 'error');
+        function toggleAuthMode(mode) {
+            const loginForm = document.getElementById('form-login');
+            const signupForm = document.getElementById('form-signup');
+            if (mode === 'signup') {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+            } else {
+                signupForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            }
+        }
 
-            const btn = document.getElementById('btn-signup');
-            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> กำลังสมัคร...';
+        async function handleSignup(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const fname = document.getElementById('reg-fname').value.trim();
+            const lname = document.getElementById('reg-lname').value.trim();
+            const email = document.getElementById('reg-email').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirmPwd = document.getElementById('reg-confirm').value;
+
+            // ตรวจสอบ Username ห้ามเป็นภาษาไทย และห้ามมีเว้นวรรคด้วย JavaScript อีกชั้น
+            const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+            if (!usernameRegex.test(username)) {
+                return showToast('ชื่อผู้ใช้งานห้ามใช้ภาษาไทย และห้ามมีเว้นวรรค', 'error');
+            }
+
+            // ตรวจสอบความถูกต้องของข้อมูล
+            if (password !== confirmPwd) {
+                return showToast('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน', 'error');
+            }
+            if (password.length < 6) {
+                return showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'error');
+            }
+
+            const btn = document.getElementById('btn-do-signup');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> กำลังตรวจสอบ...';
             btn.disabled = true;
 
-            const { data, error } = await supabaseClient.auth.signUp({ email, password });
-            btn.innerHTML = 'สมัครใช้งานครั้งแรก';
+            // ตรวจสอบว่ามี Username นี้ในระบบแล้วหรือยัง
+            const { data: existingUser } = await supabaseClient.from('teacher_profiles').select('email').eq('username', username).single();
+            if (existingUser) {
+                btn.innerHTML = 'สมัครสมาชิก';
+                btn.disabled = false;
+                return showToast('ชื่อผู้ใช้งาน (Username) นี้มีคนใช้แล้ว กรุณาตั้งชื่อใหม่', 'error');
+            }
+
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> กำลังสมัคร...';
+
+            // ส่งข้อมูลไปยัง Supabase Auth พร้อมกับ Metadata (ชื่อ นามสกุล Username)
+            const { data, error } = await supabaseClient.auth.signUp({ 
+                email: email, 
+                password: password,
+                options: {
+                    data: {
+                        username: username,
+                        first_name: fname,
+                        last_name: lname
+                    }
+                }
+            });
+            
+            btn.innerHTML = 'สมัครสมาชิก';
             btn.disabled = false;
 
             if (error) {
                 showToast(error.message, 'error');
             } else {
-                showToast('สมัครสำเร็จ! (หากตั้งค่าไว้ อาจต้องไปกดยืนยันในอีเมล)', 'success');
+                // บันทึก Username และ Email ลงตาราง teacher_profiles เพื่อใช้ตอน Login ครั้งถัดไป
+                await supabaseClient.from('teacher_profiles').insert([{ email: email, username: username }]);
+
+                showToast('สมัครสำเร็จ! กรุณาเข้าสู่ระบบ', 'success');
+                document.getElementById('signup-form').reset();
+                toggleAuthMode('login'); // กลับไปหน้า Login
+                document.getElementById('auth-identifier').value = username; // เติม Username ให้อัตโนมัติในช่อง Login
             }
         }
 
@@ -629,9 +846,20 @@
             grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-500"><i class="ph ph-spinner animate-spin text-3xl mb-2 inline-block"></i><p>กำลังโหลดข้อมูล...</p></div>';
             
             try {
+                // ดึงข้อมูลห้องเรียน
                 const { data, error } = await supabaseClient.from('classrooms').select('*').order('academic_year', { ascending: false }).order('semester', { ascending: false }).order('created_at', { ascending: false });
                 if (error) throw error;
                 globalClassrooms = data || [];
+
+                // ดึงจำนวนนักเรียนในแต่ละห้องมาเตรียมไว้
+                const { data: stData } = await supabaseClient.from('students').select('classroom_id');
+                globalClassroomCounts = {};
+                if (stData) {
+                    stData.forEach(s => {
+                        globalClassroomCounts[s.classroom_id] = (globalClassroomCounts[s.classroom_id] || 0) + 1;
+                    });
+                }
+
                 renderClassroomsGrid();
             } catch (err) {
                 showToast('โหลดข้อมูลห้องเรียนล้มเหลว', 'error');
@@ -653,36 +881,91 @@
             }
 
             grid.innerHTML = globalClassrooms.map(c => {
-                let badgeColor = 'bg-blue-100 text-blue-700';
-                if(c.subject_group === 'คณิตศาสตร์') badgeColor = 'bg-purple-100 text-purple-700';
-                else if(c.subject_group === 'วิทยาศาสตร์และเทคโนโลยี') badgeColor = 'bg-teal-100 text-teal-700';
-                else if(c.subject_group === 'ภาษาไทย') badgeColor = 'bg-orange-100 text-orange-700';
-                else if(c.subject_group === 'ภาษาต่างประเทศ') badgeColor = 'bg-pink-100 text-pink-700';
+                // จำนวนนักเรียน
+                const studentCount = globalClassroomCounts[c.id] || 0;
+                
+                // รูปแบบวันที่ (เช่น 15 พ.ค. 2026)
+                const dateObj = new Date(c.created_at);
+                const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                const formattedDate = `${dateObj.getDate()} ${thaiMonths[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+                
+                // รูปแบบชั้นและห้อง (เช่น 4/1)
+                let shortGrade = c.grade_level.replace('ประถมศึกษาปีที่ ', '').replace('อนุบาล ', 'อ.');
+                let gradeRoom = `${shortGrade}/${c.room_number}`;
                 
                 return `
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group">
-                    <div class="p-5 border-b border-slate-100">
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="px-2.5 py-1 rounded-md text-xs font-bold ${badgeColor}">${c.subject_code}</span>
-                            <div class="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded">เทอม ${c.semester}/${c.academic_year}</div>
+                <div class="bg-white rounded-[24px] shadow-sm hover:shadow-md border border-slate-100 overflow-hidden transition-all relative flex flex-col p-6 group min-h-[220px]">
+                    
+                    <!-- Watermark Icon พื้นหลังเบลอๆ ด้านขวา -->
+                    <i class="ph-fill ph-globe-hemisphere-west absolute -right-6 top-10 text-[160px] text-indigo-600 opacity-5 pointer-events-none transition-transform group-hover:scale-110 duration-500"></i>
+
+                    <div class="flex justify-between items-start mb-3 relative z-10">
+                        <div class="flex-1 pr-4">
+                            <h3 class="text-2xl font-extrabold text-slate-800 mb-3 truncate" title="${c.name}">${c.name}</h3>
+                            <span class="inline-block px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-sm font-bold tracking-wide">
+                                ${gradeRoom}
+                            </span>
                         </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-1 truncate" title="${c.name}">${c.name}</h3>
-                        <p class="text-sm text-slate-500 truncate"><i class="ph ph-books mr-1"></i> ${c.subject_group}</p>
-                    </div>
-                    <div class="p-4 bg-slate-50 flex justify-between items-center">
-                        <div class="text-slate-700 font-medium">
-                            <i class="ph ph-users mr-1"></i> ${formatGrade(c.grade_level)} ห้อง ${c.room_number}
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="deleteClassroom('${c.id}')" class="text-slate-400 hover:text-red-500 transition px-2" title="ลบห้องเรียน"><i class="ph ph-trash text-lg"></i></button>
-                            <button onclick="enterClassroom('${c.id}')" class="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
-                                เข้าสู่ห้องเรียน <i class="ph ph-arrow-right inline-block ml-1"></i>
+                        
+                        <!-- Dropdown Menu จุด 3 จุด -->
+                        <div class="relative">
+                            <button onclick="toggleDropdown(event, '${c.id}')" class="w-10 h-10 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl flex items-center justify-center transition-colors shadow-sm border border-slate-100">
+                                <i class="ph ph-dots-three text-2xl font-bold"></i>
                             </button>
+                            
+                            <div id="dropdown-${c.id}" class="hidden absolute right-0 mt-2 w-32 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-20">
+                                <button onclick="editClassroom('${c.id}')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors">
+                                    <i class="ph ph-pencil-simple text-lg"></i> แก้ไข
+                                </button>
+                                <button onclick="deleteClassroom('${c.id}')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-red-50 hover:text-red-600 flex items-center gap-2 transition-colors">
+                                    <i class="ph ph-trash text-lg"></i> ลบ
+                                </button>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- ไอคอนจำนวนคน และ วันที่ -->
+                    <div class="flex items-center gap-6 text-[15px] text-indigo-800 font-semibold mb-6 mt-2 relative z-10">
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-users text-xl"></i>
+                            <span>${studentCount} คน</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="ph ph-calendar-blank text-xl"></i>
+                            <span>${formattedDate}</span>
+                        </div>
+                    </div>
+
+                    <!-- ปุ่มดูห้องเรียน -->
+                    <div class="mt-auto relative z-10 pt-2">
+                        <button onclick="enterClassroom('${c.id}')" class="w-full bg-indigo-600 text-white py-3.5 rounded-xl hover:bg-indigo-700 active:scale-[0.98] transition-all font-medium flex justify-center items-center gap-2 shadow-sm shadow-indigo-200 text-base">
+                            <i class="ph ph-eye text-xl"></i> ดูห้องเรียน
+                        </button>
                     </div>
                 </div>
                 `;
             }).join('');
+        }
+
+        // ฟังก์ชันสำหรับเปิด/ปิด Dropdown เมนู
+        function toggleDropdown(e, id) {
+            e.stopPropagation();
+            // ปิด dropdown อื่นๆ ก่อน
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => {
+                if (el.id !== `dropdown-${id}`) el.classList.add('hidden');
+            });
+            const menu = document.getElementById(`dropdown-${id}`);
+            menu.classList.toggle('hidden');
+        }
+
+        // ปิด Dropdown เมื่อคลิกพื้นที่อื่นบนหน้าจอ
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="dropdown-"]').forEach(el => el.classList.add('hidden'));
+        });
+
+        // ฟังก์ชันแก้ไขห้องเรียน (Placeholder รอพัฒนาต่อ)
+        function editClassroom(id) {
+            showToast('ฟีเจอร์แก้ไขห้องเรียนกำลังอยู่ระหว่างการพัฒนา', 'info');
         }
 
         async function addClassroom(e) {
@@ -1048,6 +1331,93 @@
                 showToast('ลบข้อมูลสำเร็จ', 'success');
                 loadScores(true);
             } catch(err) { showToast('ไม่สามารถลบข้อมูลได้', 'error'); }
+        }
+
+        // ================= PROFILE LOGIC =================
+        function loadProfile() {
+            if (!currentSession) return;
+            const user = currentSession.user;
+            const meta = user.user_metadata || {};
+            
+            document.getElementById('prof-email').value = user.email || '';
+            document.getElementById('prof-username').value = meta.username || '';
+            document.getElementById('prof-fname').value = meta.first_name || '';
+            document.getElementById('prof-lname').value = meta.last_name || '';
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-update-profile');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> กำลังบันทึก...';
+            btn.disabled = true;
+
+            const username = document.getElementById('prof-username').value.trim();
+            const fname = document.getElementById('prof-fname').value.trim();
+            const lname = document.getElementById('prof-lname').value.trim();
+            const email = document.getElementById('prof-email').value;
+
+            // ตรวจสอบ Username ห้ามเป็นภาษาไทย
+            const usernameRegex = /^[a-zA-Z0-9_.-]+$/;
+            if (!usernameRegex.test(username)) {
+                btn.innerHTML = '<i class="ph ph-floppy-disk"></i> บันทึกข้อมูลส่วนตัว';
+                btn.disabled = false;
+                return showToast('ชื่อผู้ใช้งานห้ามใช้ภาษาไทย และห้ามมีเว้นวรรค', 'error');
+            }
+
+            // ตรวจสอบว่า Username นี้ซ้ำกับคนอื่นหรือไม่ (เช็คเมื่อมีการเปลี่ยนชื่อใหม่)
+            if (currentSession.user.user_metadata.username !== username) {
+                const { data: existingUser } = await supabaseClient.from('teacher_profiles').select('email').eq('username', username).single();
+                if (existingUser) {
+                    btn.innerHTML = '<i class="ph ph-floppy-disk"></i> บันทึกข้อมูลส่วนตัว';
+                    btn.disabled = false;
+                    return showToast('ชื่อผู้ใช้งาน (Username) นี้มีคนใช้แล้ว กรุณาตั้งชื่อใหม่', 'error');
+                }
+            }
+
+            const { data, error } = await supabaseClient.auth.updateUser({
+                data: { username: username, first_name: fname, last_name: lname }
+            });
+
+            if (error) {
+                showToast(error.message, 'error');
+            } else {
+                // อัปเดตข้อมูล Username ใหม่ในตาราง teacher_profiles ด้วย (ใช้ upsert เผื่อบัญชีเก่าไม่มีข้อมูล)
+                await supabaseClient.from('teacher_profiles').upsert([{ email: email, username: username }]);
+
+                showToast('อัปเดตข้อมูลส่วนตัวสำเร็จ', 'success');
+                // อัปเดตข้อมูล Session ทันที
+                currentSession.user = data.user;
+                // อัปเดตชื่อที่แสดงมุมขวาบน
+                document.getElementById('user-email-display').textContent = `ครู${fname} ${lname}`;
+            }
+
+            btn.innerHTML = '<i class="ph ph-floppy-disk"></i> บันทึกข้อมูลส่วนตัว';
+            btn.disabled = false;
+        }
+
+        async function handleUpdatePassword(e) {
+            e.preventDefault();
+            const pwd = document.getElementById('prof-new-pwd').value;
+            const confirm = document.getElementById('prof-confirm-pwd').value;
+
+            if (pwd !== confirm) return showToast('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน', 'error');
+            if (pwd.length < 6) return showToast('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร', 'error');
+
+            const btn = document.getElementById('btn-update-password');
+            btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> กำลังอัปเดต...';
+            btn.disabled = true;
+
+            const { error } = await supabaseClient.auth.updateUser({ password: pwd });
+
+            btn.innerHTML = '<i class="ph ph-key"></i> อัปเดตรหัสผ่าน';
+            btn.disabled = false;
+
+            if (error) {
+                showToast(error.message, 'error');
+            } else {
+                showToast('เปลี่ยนรหัสผ่านสำเร็จแล้ว', 'success');
+                document.getElementById('password-form').reset();
+            }
         }
 
         window.addEventListener('DOMContentLoaded', initApp);
