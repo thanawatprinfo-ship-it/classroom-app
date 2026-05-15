@@ -32,9 +32,9 @@
                     <span class="font-bold text-xl text-slate-900">Classroom<span class="text-blue-600">Pro</span></span>
                 </div>
                 <div class="flex items-center hidden sm:flex gap-6" id="nav-tabs">
-                    <button onclick="switchTab('students')" id="tab-students" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">รายชื่อนักเรียน</button>
-                    <button onclick="switchTab('attendance')" id="tab-attendance" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เช็คชื่อ</button>
-                    <button onclick="switchTab('scores')" id="tab-scores" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เก็บคะแนน</button>
+                    <button onclick="renderView('students')" id="tab-students" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">รายชื่อนักเรียน</button>
+                    <button onclick="renderView('attendance')" id="tab-attendance" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เช็คชื่อ</button>
+                    <button onclick="renderView('scores')" id="tab-scores" class="px-3 py-5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">เก็บคะแนน</button>
                 </div>
                 <!-- User Profile & Mobile menu button -->
                 <div class="flex items-center gap-4">
@@ -52,9 +52,9 @@
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden sm:hidden border-t border-slate-200 bg-white">
             <div class="pt-2 pb-3 space-y-1">
-                <button onclick="switchTab('students')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">รายชื่อนักเรียน</button>
-                <button onclick="switchTab('attendance')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เช็คชื่อ</button>
-                <button onclick="switchTab('scores')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เก็บคะแนน</button>
+                <button onclick="renderView('students')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">รายชื่อนักเรียน</button>
+                <button onclick="renderView('attendance')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เช็คชื่อ</button>
+                <button onclick="renderView('scores')" class="block w-full text-left px-4 py-2 text-base font-medium text-slate-700 hover:bg-slate-50">เก็บคะแนน</button>
                 <button onclick="handleLogout()" class="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:bg-red-50 border-t border-slate-100"><i class="ph ph-sign-out mr-1"></i> ออกจากระบบ</button>
             </div>
         </div>
@@ -100,9 +100,6 @@
                         </button>
                     </div>
                 </form>
-                <div class="mt-6 text-center text-xs text-slate-400">
-                    *หากกดสมัครใช้งาน ระบบอาจส่งอีเมลไปให้ยืนยันตัวตน (ขึ้นอยู่กับการตั้งค่า Supabase)
-                </div>
             </div>
         </div>
 
@@ -114,13 +111,61 @@
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-6">
                         <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="ph ph-user-plus text-blue-600"></i> เพิ่มนักเรียน</h2>
                         <form id="add-student-form" onsubmit="addStudent(event)" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">รหัสนักเรียน</label>
-                                <input type="text" id="stu-id" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <div class="flex gap-4">
+                                <div class="w-1/3">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">เลขที่</label>
+                                    <input type="number" id="stu-number" min="1" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                                <div class="w-2/3">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">รหัสนักเรียน</label>
+                                    <input type="text" id="stu-id" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="w-1/3">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">คำนำหน้า</label>
+                                    <select id="stu-prefix" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                        <option value="">เลือก</option>
+                                        <option value="เด็กชาย">เด็กชาย</option>
+                                        <option value="เด็กหญิง">เด็กหญิง</option>
+                                    </select>
+                                </div>
+                                <div class="w-2/3">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ</label>
+                                    <input type="text" id="stu-fname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ - นามสกุล</label>
-                                <input type="text" id="stu-name" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">นามสกุล</label>
+                                <input type="text" id="stu-lname" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="w-1/2">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ระดับชั้น</label>
+                                    <select id="stu-grade" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                        <option value="">เลือกชั้น</option>
+                                        <option value="อนุบาล 1">อนุบาล 1</option>
+                                        <option value="อนุบาล 2">อนุบาล 2</option>
+                                        <option value="อนุบาล 3">อนุบาล 3</option>
+                                        <option value="ประถมศึกษาปีที่ 1">ป.1</option>
+                                        <option value="ประถมศึกษาปีที่ 2">ป.2</option>
+                                        <option value="ประถมศึกษาปีที่ 3">ป.3</option>
+                                        <option value="ประถมศึกษาปีที่ 4">ป.4</option>
+                                        <option value="ประถมศึกษาปีที่ 5">ป.5</option>
+                                        <option value="ประถมศึกษาปีที่ 6">ป.6</option>
+                                    </select>
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">ห้อง</label>
+                                    <select id="stu-room" required class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                        <option value="">เลือกห้อง</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+                                </div>
                             </div>
                             <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm font-medium">เพิ่มนักเรียน</button>
                         </form>
@@ -138,14 +183,15 @@
                             <table class="w-full text-left border-collapse">
                                 <thead>
                                     <tr class="bg-white text-slate-500 text-sm border-b border-slate-200">
-                                        <th class="p-4 font-medium">ลำดับ</th>
+                                        <th class="p-4 font-medium">เลขที่</th>
                                         <th class="p-4 font-medium">รหัสนักเรียน</th>
                                         <th class="p-4 font-medium">ชื่อ-นามสกุล</th>
+                                        <th class="p-4 font-medium">ชั้น/ห้อง</th>
                                         <th class="p-4 font-medium text-right">จัดการ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="student-table-body" class="divide-y divide-slate-100">
-                                    <tr><td colspan="4" class="p-8 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr>
+                                    <tr><td colspan="5" class="p-8 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -248,7 +294,6 @@
     <script>
         // ==========================================
         // 🔴 ตั้งค่า Supabase ของคุณที่นี่ 🔴
-        // นำ URL และ Anon Key ของคุณมาใส่ตรงนี้ได้เลยครับ
         // ==========================================
         const SUPABASE_URL = 'https://dqfvnzyhgayrxlroxexq.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxZnZuenloZ2F5cnhscm94ZXhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3NTY4OTksImV4cCI6MjA5NDMzMjg5OX0.YxVau8VheQxqeBJaFfgzVGEWSRN3_uPA8ZMoVp90fzk';
@@ -282,21 +327,38 @@
             }, 3000);
         }
 
-        function switchTab(tabId) {
+        // ฟังก์ชันอัปเดตหน้าจอแบบ SPA (ไม่เปลี่ยน URL)
+        function renderView(viewId) {
+            // ซ่อนทุกหน้า
             document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('#nav-tabs button').forEach(el => el.classList.remove('tab-active'));
             
-            const targetView = document.getElementById(`view-${tabId}`);
+            // แสดงหน้าที่เลือก
+            const targetView = document.getElementById(`view-${viewId}`);
             if(targetView) targetView.classList.remove('hidden');
             
-            const tabEl = document.getElementById(`tab-${tabId}`);
+            // ทำตัวหนาให้เมนูที่เลือก
+            const tabEl = document.getElementById(`tab-${viewId}`);
             if(tabEl) tabEl.classList.add('tab-active');
             
+            // ปิดเมนูมือถือเวลาเปลี่ยนหน้า
             document.getElementById('mobile-menu').classList.add('hidden');
 
-            if (currentSession && tabId === 'students') loadStudents();
-            if (currentSession && tabId === 'attendance') { loadStudents(true).then(() => loadAttendance()); }
-            if (currentSession && tabId === 'scores') { loadStudents(true); loadScores(); }
+            const nav = document.getElementById('main-nav');
+
+            if (viewId === 'auth') {
+                nav.classList.add('hidden');
+            } else {
+                nav.classList.remove('hidden');
+                if (currentSession) {
+                    document.getElementById('user-email-display').textContent = currentSession.user.email;
+                }
+                
+                // โหลดข้อมูลตามหน้าที่เปิด
+                if (viewId === 'students') loadStudents();
+                if (viewId === 'attendance') { loadStudents(true).then(() => loadAttendance()); }
+                if (viewId === 'scores') { loadStudents(true).then(() => loadScores()); }
+            }
         }
 
         // === Initialization & Config ===
@@ -305,46 +367,42 @@
                 alert('กรุณาแก้ไขไฟล์โค้ดและใส่ข้อมูล Supabase ของคุณก่อนใช้งานครับ');
                 return;
             }
-
             try {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                checkAuthStatus(); // Check login status after connecting
+                checkAuthStatus();
             } catch (err) {
-                showToast('เชื่อมต่อ Supabase ไม่สำเร็จ กรุณาตรวจสอบ Key', 'error');
-                console.error(err);
+                showToast('เชื่อมต่อ Supabase ไม่สำเร็จ', 'error');
             }
         }
 
-        // === Authentication Logic ===
+        // === Authentication ===
         async function checkAuthStatus() {
-            // Get current session
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             currentSession = session;
-            handleRouting();
-
-            // Listen for login/logout events
+            
+            // กำหนดหน้าเริ่มต้นตามสถานะ Login
+            if (currentSession) {
+                renderView('students');
+            } else {
+                renderView('auth');
+            }
+            
+            // ดักจับเมื่อมีการ Login / Logout
             supabaseClient.auth.onAuthStateChange((_event, session) => {
+                const wasLoggedOut = !currentSession && session;
+                const wasLoggedIn = currentSession && !session;
                 currentSession = session;
-                handleRouting();
+                
+                if (wasLoggedOut) {
+                    renderView('students');
+                } else if (wasLoggedIn) {
+                    renderView('auth');
+                }
             });
         }
 
-        function handleRouting() {
-            const nav = document.getElementById('main-nav');
-            if (currentSession) {
-                // User IS logged in
-                nav.classList.remove('hidden');
-                document.getElementById('user-email-display').textContent = currentSession.user.email;
-                switchTab('students'); // Show main app
-            } else {
-                // User is NOT logged in
-                nav.classList.add('hidden');
-                switchTab('auth'); // Show login page
-            }
-        }
-
         async function handleAuth(e) {
-            e.preventDefault(); // Login
+            e.preventDefault();
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             const btn = document.getElementById('btn-login');
@@ -360,7 +418,6 @@
                 btn.disabled = false;
             } else {
                 showToast('เข้าสู่ระบบสำเร็จ', 'success');
-                // state change listener will handle routing
             }
         }
 
@@ -368,9 +425,7 @@
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             
-            if(!email || password.length < 6) {
-                return showToast('กรุณากรอกอีเมลและรหัสผ่าน (อย่างน้อย 6 ตัว)', 'error');
-            }
+            if(!email || password.length < 6) return showToast('กรุณากรอกอีเมลและรหัสผ่าน (อย่างน้อย 6 ตัว)', 'error');
 
             const btn = document.getElementById('btn-signup');
             btn.innerHTML = '<i class="ph ph-spinner animate-spin"></i> กำลังสมัคร...';
@@ -388,7 +443,6 @@
                      showToast('อีเมลนี้ถูกใช้งานแล้ว กรุณาเข้าสู่ระบบ', 'error');
                 } else {
                     showToast('สมัครสำเร็จ! (หากตั้งค่าไว้ อาจต้องไปกดยืนยันในอีเมล)', 'success');
-                    // ถ้า Supabase ปิด Confirm Email ไว้ มันจะ Login ให้เลยอัตโนมัติ
                 }
             }
         }
@@ -399,11 +453,10 @@
         }
 
         // === Data Logic (Students, Attendance, Scores) ===
-        // (เหมือนเดิมจากเวอร์ชันก่อนหน้า)
         async function loadStudents(silent = false) {
             if(!supabaseClient) return;
             const tbody = document.getElementById('student-table-body');
-            if(!silent) tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin inline-block text-xl"></i> กำลังโหลดข้อมูล...</td></tr>';
+            if(!silent && tbody) tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin inline-block text-xl"></i> กำลังโหลดข้อมูล...</td></tr>';
             try {
                 const { data, error } = await supabaseClient.from('students').select('*').order('student_id', { ascending: true });
                 if (error) throw error;
@@ -417,12 +470,14 @@
 
         function updateStudentTable() {
             const tbody = document.getElementById('student-table-body');
-            if (globalStudents.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีรายชื่อนักเรียน</td></tr>';
+            if(!tbody) return;
+            if (globalStudents.length === 0) return tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-500">ยังไม่มีรายชื่อนักเรียน</td></tr>';
             tbody.innerHTML = globalStudents.map((s, idx) => `
                 <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="p-4 text-slate-500">${idx + 1}</td>
+                    <td class="p-4 text-slate-500 text-center font-medium">${s.student_number || '-'}</td>
                     <td class="p-4 font-medium text-slate-900">${s.student_id}</td>
-                    <td class="p-4 text-slate-700">${s.name}</td>
+                    <td class="p-4 text-slate-700">${s.prefix || ''}${s.first_name || ''} ${s.last_name || s.name || ''}</td>
+                    <td class="p-4 text-slate-500">${s.grade_level || '-'} / ${s.room_number || '-'}</td>
                     <td class="p-4 text-right">
                         <button onclick="deleteStudent('${s.id}')" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50 transition"><i class="ph ph-trash"></i> ลบ</button>
                     </td>
@@ -432,16 +487,31 @@
 
         function updateStudentSelectDropdowns() {
             const scoreSelect = document.getElementById('score-student');
+            if(!scoreSelect) return;
             scoreSelect.innerHTML = '<option value="">-- เลือกนักเรียน --</option>' + 
-                globalStudents.map(s => `<option value="${s.id}">${s.student_id} : ${s.name}</option>`).join('');
+                globalStudents.map(s => `<option value="${s.id}">เลขที่ ${s.student_number || '-'} : ${s.prefix || ''}${s.first_name || ''} ${s.last_name || s.name || ''}</option>`).join('');
         }
 
         async function addStudent(e) {
             e.preventDefault();
+            const number = parseInt(document.getElementById('stu-number').value);
             const stuId = document.getElementById('stu-id').value.trim();
-            const name = document.getElementById('stu-name').value.trim();
+            const prefix = document.getElementById('stu-prefix').value;
+            const fname = document.getElementById('stu-fname').value.trim();
+            const lname = document.getElementById('stu-lname').value.trim();
+            const grade = document.getElementById('stu-grade').value;
+            const room = parseInt(document.getElementById('stu-room').value);
+
             try {
-                const { error } = await supabaseClient.from('students').insert([{ student_id: stuId, name: name }]);
+                const { error } = await supabaseClient.from('students').insert([{ 
+                    student_number: number,
+                    student_id: stuId, 
+                    prefix: prefix,
+                    first_name: fname,
+                    last_name: lname,
+                    grade_level: grade,
+                    room_number: room
+                }]);
                 if (error) throw error;
                 showToast('เพิ่มนักเรียนสำเร็จ', 'success');
                 document.getElementById('add-student-form').reset();
@@ -465,6 +535,7 @@
             if(!supabaseClient) return;
             const date = document.getElementById('attendance-date').value;
             const tbody = document.getElementById('attendance-table-body');
+            if(!tbody) return;
             if (globalStudents.length === 0) return tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-500">กรุณาเพิ่มรายชื่อนักเรียนก่อน</td></tr>';
             tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin inline-block text-xl"></i> กำลังโหลดข้อมูล...</td></tr>';
             try {
@@ -474,10 +545,11 @@
                 records.forEach(r => { attendanceMap[r.student_id] = r.status; });
                 tbody.innerHTML = globalStudents.map(s => {
                     const status = attendanceMap[s.id] || null;
+                    const fullName = `${s.prefix || ''}${s.first_name || ''} ${s.last_name || s.name || ''}`;
                     return `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
                         <td class="p-4 text-slate-700 font-medium">${s.student_id}</td>
-                        <td class="p-4 text-slate-700">${s.name}</td>
+                        <td class="p-4 text-slate-700"><span class="text-xs text-slate-400 mr-2">เลขที่ ${s.student_number || '-'}</span> ${fullName}</td>
                         <td class="p-4 flex justify-center gap-2">
                             ${genStatusBtn(s.id, date, 'present', 'มา', status, 'bg-green-100 text-green-700 hover:bg-green-200 border-green-200')}
                             ${genStatusBtn(s.id, date, 'absent', 'ขาด', status, 'bg-red-100 text-red-700 hover:bg-red-200 border-red-200')}
@@ -509,19 +581,21 @@
         async function loadScores() {
             if(!supabaseClient) return;
             const tbody = document.getElementById('scores-table-body');
+            if(!tbody) return;
             tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500"><i class="ph ph-spinner animate-spin inline-block text-xl"></i> กำลังโหลดข้อมูล...</td></tr>';
             try {
-                const { data, error } = await supabaseClient.from('scores').select('id, assignment_name, score, max_score, created_at, students(name, student_id)').order('created_at', { ascending: false });
+                const { data, error } = await supabaseClient.from('scores').select('id, assignment_name, score, max_score, created_at, students(prefix, first_name, last_name, student_id)').order('created_at', { ascending: false });
                 if (error) throw error;
                 if (!data || data.length === 0) return tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-500">ยังไม่มีข้อมูลคะแนน</td></tr>';
                 tbody.innerHTML = data.map(r => {
                     const d = new Date(r.created_at);
                     const pct = Math.round((r.score / r.max_score) * 100);
                     const color = pct >= 80 ? 'text-green-600' : (pct >= 50 ? 'text-blue-600' : 'text-red-600');
+                    const fullName = r.students ? `${r.students.prefix || ''}${r.students.first_name || ''} ${r.students.last_name || ''}` : '';
                     return `
                     <tr class="hover:bg-slate-50 border-b border-slate-100">
                         <td class="p-4 text-sm text-slate-500">${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}</td>
-                        <td class="p-4"><div class="font-medium">${r.students?.name||''}</div><div class="text-xs text-slate-500">${r.students?.student_id||''}</div></td>
+                        <td class="p-4"><div class="font-medium">${fullName}</div><div class="text-xs text-slate-500">รหัส ${r.students?.student_id||''}</div></td>
                         <td class="p-4">${r.assignment_name}</td>
                         <td class="p-4 text-right"><span class="font-bold ${color} text-lg">${r.score}</span> <span class="text-slate-400 text-sm">/ ${r.max_score}</span></td>
                     </tr>`;
@@ -542,6 +616,7 @@
                 showToast('บันทึกคะแนนสำเร็จ', 'success');
                 document.getElementById('score-task').value = '';
                 document.getElementById('score-earned').value = '';
+                document.getElementById('score-max').value = '';
                 loadScores();
             } catch (err) { showToast('บันทึกข้อมูลล้มเหลว', 'error'); }
         }
